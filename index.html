@@ -192,6 +192,11 @@
                 <h2 class="text-2xl font-bold text-gray-800 mb-4">Interactive Map</h2>
                 <p class="text-gray-600 mb-6">Click on markers to learn more about specific locations in Atkaaq.</p>
                 
+                <!-- Toggle Button for Shared Governance Layer -->
+                <button id="toggle-shared-governance" class="mb-4 bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-lg transition">
+                    Show Shared Governance Map
+                </button>
+
                 <div id="map"></div>
                 
                 <div class="mt-4 flex flex-wrap gap-4">
@@ -1434,6 +1439,103 @@
           });
         });
       });
+    </script>
+    <script>
+        // Example GeoJSON for shared governance (replace with real data as needed)
+    const sharedGovernanceGeoJSON = {
+    "type": "FeatureCollection",
+    "features": [
+        // Forest & Indigenous lands (🌲)
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "Forest & Indigenous Lands",
+                "description": "Areas governed in partnership with Indigenous communities. 🌲"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [[
+                    [-95.0, 54.5],
+                    [-94.0, 56.5],
+                    [-91.0, 57.5],
+                    [-88.0, 57.0],
+                    [-87.0, 55.0],
+                    [-89.0, 53.5],
+                    [-92.0, 53.0],
+                    [-95.0, 54.5]
+                ]]
+            }
+        },
+        // Government/settlement lands (🏠)
+        {
+            "type": "Feature",
+            "properties": {
+                "name": "Government & Settlement Land",
+                "description": "Areas primarily used for housing, towns, and government. 🏠"
+            },
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [[
+                    [-93.8, 55.5],
+                    [-91.5, 56.02],
+                    [-91.5, 55.5],
+                    [-91.5, 55.0],
+                    [-92.0, 54.6],
+                    [-93.3, 54.5]
+                ]]
+            }
+        }
+    ]
+};
+
+// Draw polygons in order: green first, then orange on top
+const sharedGovernanceLayer = L.geoJSON(null, {
+    style: function(feature) {
+        if (feature.properties.name.includes('Forest')) {
+            return {
+                color: '#059669', // green
+                fillColor: '#bbf7d0',
+                fillOpacity: 0.5,
+                weight: 3,
+                dashArray: '6 4'
+            };
+        } else {
+            return {
+                color: '#f59e42', // orange
+                fillColor: '#fde68a',
+                fillOpacity: 0.7,
+                weight: 3,
+                dashArray: '6 4'
+            };
+        }
+    },
+    onEachFeature: function (feature, layer) {
+        if (feature.properties && feature.properties.name) {
+            layer.bindPopup(
+                `<h3 class="font-bold text-lg">${feature.properties.name} ${feature.properties.name.includes('Forest') ? '🌲' : '🏠'}</h3>
+                <p>${feature.properties.description}</p>`
+            );
+        }
+    }
+});
+
+// Add features in order: green first, then orange
+sharedGovernanceLayer.addData(sharedGovernanceGeoJSON.features[0]); // green
+sharedGovernanceLayer.addData(sharedGovernanceGeoJSON.features[1]); // orange
+
+// Toggle button logic
+const toggleBtn = document.getElementById('toggle-shared-governance');
+let sharedLayerVisible = false;
+toggleBtn.addEventListener('click', function () {
+    if (!sharedLayerVisible) {
+        sharedGovernanceLayer.addTo(map);
+        toggleBtn.textContent = 'Hide Shared Governance Map';
+    } else {
+        map.removeLayer(sharedGovernanceLayer);
+        toggleBtn.textContent = 'Show Shared Governance Map';
+    }
+    sharedLayerVisible = !sharedLayerVisible;
+});
     </script>
 </body>
 </html>
